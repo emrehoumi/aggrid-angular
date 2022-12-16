@@ -1,10 +1,15 @@
+<button (click)="updateRow()">updateRow</button>
+<button (click)="updateCell()">updateCell</button>
+<button (click)="updateAllRow()">updateAllRow</button>
+<button (click)="clearDataGrid()">clear</button>
 <button (click)="clearSelection()">Clear Selection</button>
+<br />
 <ag-grid-angular
   class="ag-theme-alpine"
   style="height: 60%"
   [columnDefs]="columnDefs"
   [defaultColDef]="defaultColDef"
-  [rowData]="rowData$ | async"
+  [rowData]="rowData"
   [rowSelection]="'multiple'"
   [animateRows]="true"
   (gridReady)="onGridReady($event)"

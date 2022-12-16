@@ -1,7 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { CellClickedEvent, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
-import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 import { User } from './Model/User';
@@ -11,12 +10,12 @@ import { User } from './Model/User';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
   agGridApi!: GridApi;
   columnApi: any;
 
-  public columnDefs: ColDef[] = [
+  columnDefs: ColDef[] = [
     {
       headerName: 'ID',
       field: 'id',
@@ -35,17 +34,26 @@ export class AppComponent {
     },
   ];
 
-  public defaultColDef: ColDef = {
+  defaultColDef: ColDef = {
     sortable: true,
     filter: true,
   };
 
-  public rowData$!: Observable<User[]>;
+  rowData: User[] = [];
 
   constructor(private _httpClient: HttpClient) {}
 
+  ngOnInit(): void {
+    throw new Error('Method not implemented.');
+  }
+
   onGridReady(params: GridReadyEvent): void {
-    this.rowData$ = this._httpClient.get<User[]>('https://jsonplaceholder.typicode.com/users');
+    this.agGridApi = params.api;
+    this.columnApi = params.columnApi;
+
+    this._httpClient.get<User[]>('https://jsonplaceholder.typicode.com/users').subscribe((data) => {
+      this.rowData = data;
+    });
   }
 
   onCellClicked(e: CellClickedEvent): void {
@@ -54,5 +62,31 @@ export class AppComponent {
 
   clearSelection(): void {
     this.agGrid.api.deselectAll();
+  }
+
+  updateRow(): void {
+    const rowNode = this.agGridApi.getRowNode('0');
+    rowNode?.setData({
+      id: 99,
+      name: 'El Mehdi REHOUMI',
+      username: 'emrehoumi',
+      email: 'em@karina.biz',
+    });
+  }
+
+  updateCell(): void {
+    const rowNode = this.agGridApi.getRowNode('0');
+    rowNode?.setDataValue('id', 55);
+  }
+
+  updateAllRow(): void {
+    this._httpClient.get<any>('https://jsonplaceholder.typicode.com/users').subscribe((data) => {
+      this.agGridApi.setRowData([]);
+      this.agGridApi.applyTransaction({ add: data });
+    });
+  }
+
+  clearDataGrid(): void {
+    this.agGridApi.setRowData([]);
   }
 }
