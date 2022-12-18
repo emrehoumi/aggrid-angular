@@ -1,11 +1,11 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { CellClickedEvent, ColDef, ColumnApi, GridApi, GridOptions, GridReadyEvent, RowNodeTransaction } from 'ag-grid-community';
-import { HttpClient } from '@angular/common/http';
 
-import { User } from './Model/User';
+import { User } from './models/User';
 import { CellCustomComponent } from './components/cell-custom/cell-custom.component';
 import { ActionsComponent } from './components/actions/actions.component';
+import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
     filter: true,
   };
 
-  constructor(private _httpClient: HttpClient) {}
+  constructor(private _apiService: ApiService) {}
 
   ngOnInit(): void {
     console.log('ngOnInit');
@@ -46,7 +46,7 @@ export class AppComponent implements OnInit {
     this.agGridApi = params.api;
     this.columnApi = params.columnApi;
 
-    this._httpClient.get<User[]>('https://jsonplaceholder.typicode.com/users').subscribe((data) => {
+    this._apiService.getUsers().subscribe((data) => {
       this.rowData = data;
     });
   }
@@ -75,7 +75,7 @@ export class AppComponent implements OnInit {
   }
 
   addRows(): void {
-    this._httpClient.get<any>('https://jsonplaceholder.typicode.com/users').subscribe((data) => {
+    this._apiService.getUsers().subscribe((data) => {
       this.agGridApi.setRowData([]);
       this.agGridApi.applyTransaction({ add: data });
     });

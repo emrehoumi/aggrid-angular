@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { ICellRendererParams } from 'ag-grid-community';
-import { User } from 'src/app/Model/User';
 
 @Component({
   selector: 'app-actions',
