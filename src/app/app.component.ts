@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { CellClickedEvent, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { CellClickedEvent, ColDef, ColumnApi, GridApi, GridOptions, GridReadyEvent, RowNodeTransaction } from 'ag-grid-community';
 import { HttpClient } from '@angular/common/http';
 
 import { User } from './Model/User';
+import { CellCustomComponent } from './components/cell-custom/cell-custom.component';
+import { ActionsComponent } from './components/actions/actions.component';
 
 @Component({
   selector: 'app-root',
@@ -13,38 +15,31 @@ import { User } from './Model/User';
 export class AppComponent implements OnInit {
   @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
   agGridApi!: GridApi;
-  columnApi: any;
+  columnApi!: ColumnApi;
+  rowData: User[] = [];
+
+  gridOptions: GridOptions = {
+    context: { componentParent: this, value: 'CustomValue' },
+  };
 
   columnDefs: ColDef[] = [
-    {
-      headerName: 'ID',
-      field: 'id',
-    },
-    {
-      headerName: 'Name',
-      field: 'name',
-    },
-    {
-      headerName: 'Username',
-      field: 'username',
-    },
-    {
-      headerName: 'Email',
-      field: 'email',
-    },
+    { headerName: 'Name', field: 'name', sortable: true },
+    { headerName: 'Username', field: 'username', sortable: true },
+    { headerName: 'Email', field: 'email', sortable: true },
+    { headerName: 'Website', field: 'website', cellRenderer: CellCustomComponent },
+    { headerName: '', field: '', cellRenderer: ActionsComponent },
   ];
 
   defaultColDef: ColDef = {
-    sortable: true,
+    flex: 1,
+    minWidth: 200,
     filter: true,
   };
-
-  rowData: User[] = [];
 
   constructor(private _httpClient: HttpClient) {}
 
   ngOnInit(): void {
-    throw new Error('Method not implemented.');
+    console.log('ngOnInit');
   }
 
   onGridReady(params: GridReadyEvent): void {
@@ -57,7 +52,7 @@ export class AppComponent implements OnInit {
   }
 
   onCellClicked(e: CellClickedEvent): void {
-    console.log('cellClicked', e);
+    // console.log('cellClicked', e);
   }
 
   clearSelection(): void {
@@ -67,19 +62,19 @@ export class AppComponent implements OnInit {
   updateRow(): void {
     const rowNode = this.agGridApi.getRowNode('0');
     rowNode?.setData({
-      id: 99,
       name: 'El Mehdi REHOUMI',
       username: 'emrehoumi',
       email: 'em@karina.biz',
+      website: 'denaehasia.net',
     });
   }
 
   updateCell(): void {
     const rowNode = this.agGridApi.getRowNode('0');
-    rowNode?.setDataValue('id', 55);
+    rowNode?.setDataValue('name', 'New Name');
   }
 
-  updateAllRow(): void {
+  addRows(): void {
     this._httpClient.get<any>('https://jsonplaceholder.typicode.com/users').subscribe((data) => {
       this.agGridApi.setRowData([]);
       this.agGridApi.applyTransaction({ add: data });
@@ -88,5 +83,70 @@ export class AppComponent implements OnInit {
 
   clearDataGrid(): void {
     this.agGridApi.setRowData([]);
+  }
+
+  add2Rows(addIndex?: number) {
+    const newItems = [
+      {
+        name: 'Max',
+        username: 'Max',
+        email: 'max@karina.biz',
+        website: 'anastasia.net',
+      },
+      {
+        name: 'Min',
+        username: 'Min',
+        email: 'max@karina.biz',
+        website: 'yoamtasia.net',
+      },
+    ];
+    const res = this.agGridApi.applyTransaction({
+      add: newItems,
+      addIndex: addIndex,
+    })!;
+    this.printResult(res);
+  }
+
+  updateRowCells() {
+    // update the first 2 items
+    const itemsToUpdate: any[] = [];
+    this.agGridApi.forEachNodeAfterFilterAndSort((rowNode, index) => {
+      // only do first 2
+      if (index >= 2) {
+        return;
+      }
+      const data = rowNode.data;
+      data.username = 'Unknown';
+      itemsToUpdate.push(data);
+    });
+    const res = this.agGridApi.applyTransaction({ update: itemsToUpdate })!;
+    this.printResult(res);
+  }
+
+  editRow(data: any[]): void {
+    this.agGridApi.applyTransaction({ update: data });
+  }
+
+  removeRow(data: any[]): void {
+    this.agGridApi.applyTransaction({ remove: data });
+  }
+
+  onRemoveSelected() {
+    const selectedData = this.agGridApi.getSelectedRows();
+    const res = this.agGridApi.applyTransaction({ remove: selectedData })!;
+    this.printResult(res);
+  }
+
+  private printResult(res: RowNodeTransaction) {
+    console.log('---------------------------------------');
+    if (res.add) {
+      res.add.forEach((rowNode) => console.log('Added Row Node', rowNode));
+    }
+    if (res.remove) {
+      res.remove.forEach((rowNode) => console.log('Removed Row Node', rowNode));
+    }
+    if (res.update) {
+      res.update.forEach((rowNode) => console.log('Updated Row Node', rowNode));
+    }
   }
 }

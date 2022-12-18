@@ -1,14 +1,19 @@
 <button (click)="updateRow()">updateRow</button>
 <button (click)="updateCell()">updateCell</button>
-<button (click)="updateAllRow()">updateAllRow</button>
+<button (click)="addRows()">Add Rows</button>
+<button (click)="add2Rows()">Add 2 Rows</button>
+<button (click)="add2Rows(2)">Add 2 Rows at index 2</button>
+<button (click)="updateRowCells()">Update Top 2 Cells</button>
+<button (click)="onRemoveSelected()">Remove Selected</button>
 <button (click)="clearDataGrid()">clear</button>
 <button (click)="clearSelection()">Clear Selection</button>
 <br />
 <ag-grid-angular
   class="ag-theme-alpine"
-  style="height: 60%"
+  style="height: 90vh"
   [columnDefs]="columnDefs"
   [defaultColDef]="defaultColDef"
+  [gridOptions]="gridOptions"
   [rowData]="rowData"
   [rowSelection]="'multiple'"
   [animateRows]="true"
